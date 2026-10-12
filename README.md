@@ -1,19 +1,19 @@
 # Enterprise-Grade Real-Time Financial Fraud Detection Pipeline
 
 ## Executive Summary
-Proyek ini adalah arsitektur *Big Data streaming end-to-end* berskala *enterprise* yang dirancang untuk mendeteksi anomali dan penipuan finansial (seperti *Account Takeover* dan pencucian uang/*Smurfing*) secara *real-time*. Menggunakan dataset **PaySim** (simulasi jutaan transaksi *mobile money*), sistem ini mengimplementasikan **Apache Kafka** sebagai tulang punggung pengiriman pesan berkecepatan tinggi dan **Random Forest Classifier** pada arsitektur *microservice* untuk melakukan *real-time inference* dengan latensi tingkat milidetik.
+This project is an enterprise-scale, end-to-end Big Data streaming architecture designed to detect financial anomalies and fraud (such as Account Takeovers and Smurfing/Money Laundering) in real-time. Utilizing the **PaySim** dataset (simulating millions of mobile money transactions), this system implements **Apache Kafka** as the high-speed message delivery backbone and a **Random Forest Classifier** within a microservice architecture to perform real-time inference with millisecond latency.
 
-Proyek ini mendemonstrasikan integrasi penuh antara **Data Engineering** (membangun *streaming data pipeline*) dan **Data Science** (melatih dan mengimplementasikan model *Machine Learning* ke dalam lingkungan produksi yang hidup).
+This project demonstrates a seamless integration between **Data Engineering** (architecting streaming data pipelines) and **Data Science** (training and deploying Machine Learning models into a live production environment).
 
 ---
 
 ## System Architecture & Data Flow
 
-Arsitektur sistem dibangun menggunakan pendekatan *Event-Driven Architecture (EDA)* yang terbagi menjadi tiga fase utama:
+The system architecture is built on an Event-Driven Architecture (EDA) approach, divided into three primary phases:
 
-1. **Data Ingestion (Producer):** Skrip `producer.py` membaca dataset mentah, melakukan serialisasi setiap baris log transaksi menjadi format JSON, dan menembakkannya (memublikasikan) ke dalam *message broker* dengan kecepatan yang dapat disesuaikan (mensimulasikan *traffic* nasabah *live*).
-2. **Message Broker (Apache Kafka & Zookeeper):** Di- *hosting* di dalam *container* Docker, Kafka menerima dan menampung jutaan antrean *payload* JSON dalam *topic* `financial_transactions` tanpa mengalami *bottleneck*.
-3. **Stream Processing & ML Inference (Consumer):** Skrip `consumer.py` bertindak sebagai layanan *microservice* independen yang mendengarkan *topic* Kafka secara *live*. Layanan ini mengekstrak fitur secara *on-the-fly* dan memasukkannya ke dalam model *Machine Learning* (`fraud_model.pkl`) untuk memprediksi probabilitas *fraud* di detik yang sama saat transaksi terjadi.
+1. **Data Ingestion (Producer):** he `producer.py` script reads the raw dataset, serializes each transaction log row into a JSON payload, and publishes it into the message broker at an adjustable speed to simulate live customer traffic.
+2. **Message Broker (Apache Kafka & Zookeeper):** Hosted within Docker containers, Kafka receives and queues millions of JSON payloads in the `financial_transactions` topic without encountering data bottlenecks.
+3. **Stream Processing & ML Inference (Consumer):** The `consumer.py` script acts as an independent microservice that actively listens to the Kafka topic. It extracts features on-the-fly and feeds them into the Machine Learning model (`fraud_model.pkl`) to predict the probability of fraud at the exact moment the transaction occurs.
 
 ---
 
@@ -23,12 +23,12 @@ Arsitektur sistem dibangun menggunakan pendekatan *Event-Driven Architecture (ED
 - **Apache Kafka:** Distributed event streaming platform.
 - **Apache Zookeeper:** Centralized service for maintaining configuration information.
 - **Docker & Docker Compose:** Containerization & infrastructure orchestration.
-- **Python (`kafka-python`):** Skrip antarmuka Producer & Consumer.
+- **Python (`kafka-python`):** Producer & Consumer interface scripts.
 
 **Machine Learning / Data Science:**
-- **Scikit-Learn:** Pembangunan dan pelatihan model *Random Forest Classifier*.
-- **Pandas:** Manipulasi data dan *Feature Engineering* (Amount, Old Balance, New Balance).
-- **Joblib:** Serialisasi dan penyimpanan model ML (*Pickling*).
+- **Scikit-Learn:** Building and training the Random Forest Classifier.
+- **Pandas:** Data manipulation and Feature Engineering (Amount, Old Balance, New Balance).
+- **Joblib:** ML model serialization and storage (Pickling).
 
 ---
 
@@ -37,71 +37,71 @@ Arsitektur sistem dibangun menggunakan pendekatan *Event-Driven Architecture (ED
 ```text
 ├── data/
 │   └── raw/
-│       └── transactions.csv      # Dataset mentah PaySim (tidak diunggah ke Git)
+│       └── transactions.csv      # Raw PaySim dataset (not uploaded to Git)
 ├── src/
-│   ├── producer.py               # Kafka Producer (Simulasi data masuk)
+│   ├── producer.py               # Kafka Producer (Simulates incoming data)
 │   ├── consumer.py               # Kafka Consumer (Real-time ML Inference)
-│   ├── train_model.py            # Skrip pelatihan model ML
-│   └── fraud_model.pkl           # Model Random Forest yang sudah dikompilasi
-├── docker-compose.yml            # Konfigurasi infrastruktur Kafka & Zookeeper
+│   ├── train_model.py            # ML model training script
+│   └── fraud_model.pkl           # Compiled Random Forest model
+├── docker-compose.yml            # Kafka & Zookeeper infrastructure config
 └── README.md
 ```
 
 ## Machine Learning Model Details
 - **Algorithm:** Random Forest Classifier (50 Estimators).
-- **Feature Engineering:** Model dilatih menggunakan tiga metrik numerik krusial yang mewakili pergerakan aset: amount, oldbalanceOrg, dan newbalanceOrig.
+- **Feature Engineering:** The model is trained using three crucial numerical metrics representing asset movement: amount, oldbalanceOrg, and newbalanceOrig.
 - **Fraud Patterns Detected:**
-  1. **Account Takeover:** Mengidentifikasi skenario pengurasan saldo masif secara tiba-tiba (CASH_OUT atau TRANSFER yang menyisakan saldo 0).
-  2. **Smurfing / Money Laundering:** Mengidentifikasi rentetan transaksi bernominal identik dan tidak wajar yang memotong batasan logika sistem rule-based tradisional.
+  1. **Account Takeover:** Identifies scenarios involving sudden and massive balance draining (CASH_OUT or TRANSFER leaving a 0 balance).
+  2. **Smurfing / Money Laundering:** Identifies sequences of identical and unnatural transaction amounts designed to bypass traditional rule-based system limits.
 
-## Panduan Instalasi & Eksekusi
-1. **Prasyarat Sistem**
+## Installation & Execution Guide
+1. **System Prerequisites**
    - Docker Desktop (dengan WSL 2 terinstalasi untuk pengguna Windows).
    - Python 3.8+
    - Minimal RAM 8GB (Direkomendasikan 16GB+).
      
-2. **Persiapan Environment**
-   - Clone repository dan masuk ke directory project:
+2. **Environment Setup**
+   - Clone the repository and navigate to the project directory:
    ```bash
     git clone https://github.com/rafiffrhn/realtime-anti-fraud-detection-pipeline.git
     cd realtime-anti-fraud-detection-pipeline
    ```
-   - Instalasi seluruh dependensi python:
+   - Install all required Python dependencies:
     ```bash
     python -m pip install pyspark kafka-python pandas scikit-learn joblib
    ```
-   - Unduh dataset PaySim (Synthetic Financial Datasets For Fraud Detection) dari Kaggle. Ekstrak dan ubah nama file menjadi transactions.csv, lalu tempatkan di dalam direktori data/raw/.
+   - Download the PaySim dataset (Synthetic Financial Datasets For Fraud Detection) from Kaggle. Extract and rename the file to transactions.csv, then place it inside the data/raw/ directory.
      
-3. **Menjalankan Infrastruktur Big Data**
-   - Nyalakan cluster Apache Kafka dan Zookeeper menggunakan Docker secara detached:
+3. **Running the Big Data Infrastructure**
+   - Start the Apache Kafka and Zookeeper cluster using Docker in detached mode:
    ```bash
     docker-compose up -d
    ```
-   Pastikan kedua container berstatus *running* di dashboard Docker Desktop.
+  Ensure both containers are running in your Docker Desktop dashboard.
    
-5. **Pelatihan Model ML**
-   - Jalankan jika ingin melatih model dengan parameter yang berbeda:
+5. **ML Model Training**
+   - Run this script if you wish to retrain the model with different parameters:
    ```bash
     cd src
     python train_model.py
    ```
-   Script ini akan memproses ulang data dan memperbarui *file* fraud_model.pkl
+   This will reprocess the data and update the fraud_model.pkl file.
    
-6. **Memulai Simulasi Real-Time**
-   - Buka Terminal Pertama dan jalankan layanan Producer untuk mulai menembakkan aliran transaksi ke server Kafka:
+6. **Starting the Real-Time Simulation**
+   - Open the First Terminal and run the Producer service to start streaming transactions to the Kafka server:
    ```bash
     cd src
     python producer.py
    ```
-   - Buka Terminal Kedua dan nyalakan radar deteksi berbasis Machine Learning:
+   - Open a Second Terminal and activate the Machine Learning detection radar (Consumer):
    ```bash
     cd src
     python consumer.py
    ```
-   Sistem sekarang berjalan secara live. Setiap anomali yang ditemukan oleh model AI akan langsung memicu peringatan 🚨 [AI FRAUD DETECTED] di terminal Consumer secara real-time.
+  The system is now running live. Every anomaly identified by the AI model will instantly trigger a 🚨 [AI FRAUD DETECTED] alert in the Consumer terminal in real-time.
    
-7. **Terminasi Sistem**
-   - Untuk mematikan pipeline secara aman dan membersihkan container Docker dari memori, jalankan:
+7. **System Termination**
+   - To safely shut down the pipeline and clear the Docker containers from memory, run:
     ```bash
     docker-compose down
    ```
